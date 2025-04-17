@@ -1,23 +1,13 @@
-# Stage 1: Build stage
-FROM maven:3.8.5-openjdk-17 AS buildstage
-
-# Set working directory inside container
-WORKDIR /app
-
-# Copy all files from current directory to container
+##artifact build stage
+FROM maven AS buildstage
+RUN mkdir /opt/mindcircuit13
+WORKDIR /opt/mindcircuit13
 COPY . .
+RUN mvn clean install    ## artifact -- .war
 
-# Build the project using Maven
-RUN mvn clean package -DskipTests
-
-# Stage 2: Run stage
-FROM openjdk:17-jdk-slim
-
-# Set working directory
-WORKDIR /app
-
-# Copy the built jar from build stage
-COPY --from=buildstage /app/target/*.jar app.jar
-
-# Run the application
-CMD ["java", "-jar", "app.jar"]
+### tomcat deploy stage
+FROM tomcat
+WORKDIR webapps
+COPY --from=buildstage /opt/mindcircuit13/target/*.war .
+RUN rm -rf ROOT && mv *.war ROOT.war
+EXPOSE 8080
