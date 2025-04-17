@@ -1,13 +1,17 @@
-##artifact build stage
-FROM maven AS buildstage
-RUN mkdir /opt/mindcircuit13
-WORKDIR /opt/mindcircuit13
-COPY . .
-RUN mvn clean install    ## artifact -- .war
+# Use an official Ubuntu base image
+FROM ubuntu:latest
 
-### tomcat deploy stage
-FROM tomcat
-WORKDIR webapps
-COPY --from=buildstage /opt/mindcircuit13/target/*.war .
-RUN rm -rf ROOT && mv *.war ROOT.war
-EXPOSE 8080
+# Create a directory where the volume will be mounted
+RUN mkdir -p /data
+
+# Declare a volume
+VOLUME ["/data"]
+
+# Set a working directory
+WORKDIR /data
+
+# Optionally, you can add files into the volume directory
+COPY . /data
+
+# Command to run when the container starts
+CMD ["echo", "Volume created and mounted at /data"]
